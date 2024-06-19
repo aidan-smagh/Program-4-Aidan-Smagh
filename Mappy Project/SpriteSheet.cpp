@@ -18,7 +18,7 @@ void Sprite::InitSprites(int width, int height)
 	curFrame = 0;
 	frameCount = 0;
 	frameDelay = 6;
-	frameWidth = 60;
+	frameWidth = 59;
 	frameHeight = 48;
 	animationColumns = 5;
 	animationDirection = 1;
@@ -119,32 +119,4 @@ void Sprite::DrawSprites(int xoffset, int yoffset)
 	else if (animationDirection == 4) {
 		al_draw_bitmap_region(image, fx, fy, frameWidth, frameHeight, x - xoffset, y - yoffset, 0);
 	}
-}
-
-int Sprite::jumping(int jump, const int JUMPIT)
-{
-	//handle jumping
-	if (jump==JUMPIT) { 
-		if (!collided(x + frameWidth/2, y + frameHeight + 5))
-			jump = 0; 
-	}
-	else
-	{
-		y -= jump/3; 
-		jump--; 
-		curFrame=0;
-	}
-
-	if (jump<0) 
-	{ 
-		if (collided(x + frameWidth/2,  y + frameHeight))
-		{ 
-			jump = JUMPIT; 
-			while (collided(x + frameWidth/2,y + frameHeight))
-			{
-				y -= 3;
-			}
-		} 
-	}
-	return jump;
 }

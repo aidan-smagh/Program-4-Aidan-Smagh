@@ -1,6 +1,8 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_font.h>
 #include "SpriteSheet.h"
 #include "mappy_A5.h"
 #include <iostream>
@@ -8,6 +10,9 @@ using namespace std;
 
 int collided(int x, int y);  //Tile Collision
 bool endValue( int x, int y ); //End Block with the User Value = 8
+
+bool levelOver;
+
 int main(void)
 {
 	const int WIDTH = 900;
@@ -42,12 +47,15 @@ int main(void)
 	al_install_keyboard();
 	al_init_image_addon();
 	al_init_primitives_addon();
+	al_init_font_addon();
+	al_init_ttf_addon();
+	ALLEGRO_FONT* font = al_load_font("Long_Shot.ttf", 24, 0);
 
 	player.InitSprites(WIDTH, HEIGHT);
 
 	int xOff = 0;
 	int yOff = 0;
-	MapLoad("sample3.fmp", 1);
+	MapLoad("sample1.fmp", 1);
 
 	event_queue = al_create_event_queue();
 	timer = al_create_timer(1.0 / 60);
@@ -64,9 +72,39 @@ int main(void)
 	player.DrawSprites(0,0);
 	al_flip_display();
 	al_clear_to_color(al_map_rgb(0,0,0));
+
+	double startTime = al_get_time();
+	double currentTime;
+	int totalTime = 60;
+	int duration = totalTime;
+	int level = 1;
+	char name[80];
+
 	while(!done)
 	{
 		ALLEGRO_EVENT ev;
+
+		if (levelOver)
+		{
+			totalTime = 0;
+			levelOver = false;
+			level++;
+			if (level == 4) {
+				return 0;
+			}
+			sprintf(name, "Sample%d.fmp", level);
+			MapLoad(name, 1);
+			startTime = al_get_time();
+
+		}
+
+		currentTime = al_get_time();
+		totalTime = duration - (currentTime - startTime);
+		if (totalTime == 0) {
+			cout << "out of time";
+			return 0;
+		}
+
 		al_wait_for_event(event_queue, &ev);
 		if(ev.type == ALLEGRO_EVENT_TIMER)
 		{
@@ -82,7 +120,8 @@ int main(void)
 			else
 				player.UpdateSprites(WIDTH,HEIGHT,2);
 			if (player.CollisionEndBlock())
-				cout<<"Hit an End Block\n";
+				levelOver = true;
+			
 			render = true;
 
 		}
@@ -164,11 +203,14 @@ int main(void)
 			MapDrawFG(xOff,yOff, 0, 0, WIDTH, HEIGHT, 0);
 			//jump=player.jumping(jump,JUMPIT);
 			player.DrawSprites(xOff, yOff);
+			al_draw_textf(font, al_map_rgb(255, 255, 255), WIDTH / 2, HEIGHT - 25, ALLEGRO_ALIGN_CENTER, "Time remaining = %i", totalTime);
+
 			al_flip_display();
 			al_clear_to_color(al_map_rgb(0,0,0));
 		}
 	}
 	MapFreeMem();
+	al_destroy_font(font);
 	al_destroy_event_queue(event_queue);
 	al_destroy_display(display);						//destroy our display object
 
